@@ -10,7 +10,7 @@ import (
 
 type Storage interface {
 	CreateUser(*types.User) error
-	GetUserById(string) (*types.User, error)
+	GetUserByEmail(string) (*types.User, error)
 }
 
 type PostgresStore struct {
@@ -45,7 +45,7 @@ func (s *PostgresStore) createAccountTable() error {
 	query := `create table if not exists users (
 		id serial primary key,
 		username varchar(100),
-		email varchar(100),
+		email varchar(100) UNIQUE,
 		encrypted_password varchar(100)
 
 	)`
@@ -69,16 +69,16 @@ func (s *PostgresStore) CreateUser(user *types.User) error {
 	return nil
 }
 
-func (s *PostgresStore) GetUserById(id string) (*types.User, error) {
+func (s *PostgresStore) GetUserByEmail(email string) (*types.User, error) {
 	var user types.User
 
-	stmt, err := s.db.Prepare("SELECT id, username, email, encrypted_password FROM users WHERE id = $1")
+	stmt, err := s.db.Prepare("SELECT id, username, email, encrypted_password FROM users WHERE email = $1")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	err = stmt.QueryRow(id).Scan(&user.ID, &user.Username, &user.Email, &user.EncryptedPassword)
+	err = stmt.QueryRow(email).Scan(&user.ID, &user.Username, &user.Email, &user.EncryptedPassword)
 	if err != nil {
 		if err == sql.ErrNoRows {
 

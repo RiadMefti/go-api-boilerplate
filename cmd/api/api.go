@@ -40,7 +40,35 @@ func Run(s *Server) {
 }
 
 func (s *Server) login(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("login"))
+	var userRq types.LoginUserRq
+
+	errBody := utils.ParseJSON(r, &userRq)
+	if errBody != nil {
+		utils.WriteError(w, 400, errors.New("something went wrong"))
+		return
+	}
+	user, err := s.store.GetUserByEmail(userRq.Email)
+
+	if err != nil {
+		utils.WriteError(w, 400, errors.New("something went wrong"))
+		return
+	}
+
+	samePassword := utils.ValidatePassoword(userRq.Password, user.EncryptedPassword)
+	if !samePassword {
+		utils.WriteError(w, 403, errors.New("not your password "))
+		return
+	}
+
+	jwt, jwtErr := utils.GenerateToken(fmt.Sprint(user.ID), userRq.Email)
+	if jwtErr != nil {
+		utils.WriteError(w, 500, err)
+		return
+	}
+
+	utils.WriteJSON(w, 200, struct {
+		Jwt string `json:"jwt"`
+	}{Jwt: jwt})
 
 }
 
