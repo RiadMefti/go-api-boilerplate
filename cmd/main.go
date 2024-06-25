@@ -23,7 +23,12 @@ func main() {
 		"3000",
 	)
 
-	db, err := db.IninDb(config)
+	db, err := db.NewPostgresStore(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.Init()
 	if err != nil {
 		log.Fatal(err)
 	}

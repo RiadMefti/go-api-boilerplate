@@ -9,14 +9,13 @@ import (
 )
 
 type Storage interface {
-	test()
 }
 
 type PostgresStore struct {
 	db *sql.DB
 }
 
-func IninDb(config types.Config) (*PostgresStore, error) {
+func NewPostgresStore(config types.Config) (*PostgresStore, error) {
 
 	postgresCOnnectionString := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable", config.DbHost, config.DbPort, config.DbUser, config.DbPassword, config.DbName)
@@ -36,6 +35,19 @@ func IninDb(config types.Config) (*PostgresStore, error) {
 
 }
 
-func (store PostgresStore) test() {
+func (s *PostgresStore) Init() error {
+	return s.createAccountTable()
+}
 
+func (s *PostgresStore) createAccountTable() error {
+	query := `create table if not exists users (
+		id serial primary key,
+		username varchar(100),
+		email varchar(100),
+		encrypted_password varchar(100)
+
+	)`
+
+	_, err := s.db.Exec(query)
+	return err
 }
