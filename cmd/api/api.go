@@ -39,6 +39,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("login"))
 
 }
+
 func register(w http.ResponseWriter, r *http.Request) {
 
 }
