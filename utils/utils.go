@@ -48,7 +48,8 @@ func WriteError(w http.ResponseWriter, status int, err error) {
 var jwtKey = []byte("your_secret_key") // Replace with your secret key
 
 type CustomClaims struct {
-	Email string `json:"email"`
+	UserID string `json:"id"`
+	Email  string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -56,8 +57,8 @@ type CustomClaims struct {
 func GenerateToken(userID, email string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := CustomClaims{
-
-		Email: email,
+		UserID: userID,
+		Email:  email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			Issuer:    "api-boilerplate",

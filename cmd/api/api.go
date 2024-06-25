@@ -119,5 +119,21 @@ func (s *Server) register(w http.ResponseWriter, r *http.Request) {
 
 }
 func (s *Server) protectedRoute(w http.ResponseWriter, r *http.Request) {
+	tokenString := r.Header.Get("Authorization")
+	id := r.PathValue("id")
+	claims, err := utils.ValidateToken(tokenString)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if claims.UserID != id {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Proceed with the protected resource access
+	response := fmt.Sprintf("Access granted to user %s with email %s", claims.UserID, claims.Email)
+	w.Write([]byte(response))
 
 }
