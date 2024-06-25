@@ -3,16 +3,20 @@ package api
 import (
 	"log"
 	"net/http"
+
+	"github.com/RiadMefti/go-api-boilerplate/db"
 )
 
 type Server struct {
 	address string
+	store   db.Storage
 }
 
-func NewApiServer(adresse string) *Server {
+func NewApiServer(adresse string, store db.Storage) *Server {
 
 	return &Server{
 		address: adresse,
+		store:   store,
 	}
 
 }

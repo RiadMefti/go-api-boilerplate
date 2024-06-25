@@ -1,9 +1,33 @@
 package main
 
-import "github.com/RiadMefti/go-api-boilerplate/cmd/api"
+import (
+	"log"
+	"os"
+
+	"github.com/RiadMefti/go-api-boilerplate/cmd/api"
+	"github.com/RiadMefti/go-api-boilerplate/config"
+	"github.com/RiadMefti/go-api-boilerplate/db"
+	"github.com/joho/godotenv"
+)
 
 func main() {
-	server := api.NewApiServer(":3000")
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+	config := config.NewConfig(
+		os.Getenv("DbHost"),
+		os.Getenv("DbPort"),
+		os.Getenv("DbUser"),
+		os.Getenv("DbPassword"),
+		os.Getenv("DbName"),
+		"3000",
+	)
 
+	db, err := db.IninDb(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	server := api.NewApiServer(":3000", db)
 	api.Run(server)
 }
