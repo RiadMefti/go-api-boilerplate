@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -45,7 +46,7 @@ func WriteError(w http.ResponseWriter, status int, err error) {
 	WriteJSON(w, status, map[string]string{"error": err.Error()})
 }
 
-var jwtKey = []byte("your_secret_key") // Replace with your secret key
+var jwtKey = []byte(os.Getenv("JWTSECRET"))
 
 type CustomClaims struct {
 	UserID string `json:"id"`
