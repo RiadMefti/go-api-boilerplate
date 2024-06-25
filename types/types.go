@@ -1,7 +1,7 @@
 package types
 
 type User struct {
-	ID                string `json:"id"`
+	ID                int  `json:"id"`
 	Username          string `json:"username"`
 	Email             string `json:"email"`
 	EncryptedPassword string `json:"-"`
@@ -14,4 +14,10 @@ type Config struct {
 	DbPassword   string
 	DbName       string
 	ServerAdress string
+}
+
+type RegisterUserRq struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }

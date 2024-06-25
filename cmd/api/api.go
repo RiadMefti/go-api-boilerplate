@@ -1,10 +1,14 @@
 package api
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/RiadMefti/go-api-boilerplate/db"
+	"github.com/RiadMefti/go-api-boilerplate/types"
+	"github.com/RiadMefti/go-api-boilerplate/utils"
 )
 
 type Server struct {
@@ -24,9 +28,9 @@ func NewApiServer(adresse string, store db.Storage) *Server {
 func Run(s *Server) {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /login", login)
-	mux.HandleFunc("POST /register", register)
-	mux.HandleFunc("GET /protected/{id}", protectedRoute)
+	mux.HandleFunc("POST /login", s.login)
+	mux.HandleFunc("POST /register", s.register)
+	mux.HandleFunc("GET /protected/{id}", s.protectedRoute)
 	log.Println("Server starting on", s.address, " ...")
 	err := http.ListenAndServe(s.address, mux)
 	if err != nil {
@@ -35,14 +39,57 @@ func Run(s *Server) {
 
 }
 
-func login(w http.ResponseWriter, r *http.Request) {
+func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("login"))
 
 }
 
-func register(w http.ResponseWriter, r *http.Request) {
+func (s *Server) register(w http.ResponseWriter, r *http.Request) {
+
+	var userRq types.RegisterUserRq
+
+	errBody := utils.ParseJSON(r, &userRq)
+	if errBody != nil {
+		utils.WriteError(w, 400, errors.New("something went wrong"))
+		return
+	}
+
+	hashedPassowrd, err := utils.HashPassowrd(userRq.Password)
+	if err != nil {
+		utils.WriteError(w, 400, err)
+		return
+	}
+
+	id, err := utils.GenerateRandomID()
+	if err != nil {
+		utils.WriteError(w, 500, err)
+		return
+	}
+
+	newUser := types.User{
+		ID:                id,
+		EncryptedPassword: hashedPassowrd,
+		Username:          userRq.Username,
+		Email:             userRq.Email,
+	}
+
+	err = s.store.CreateUser(&newUser)
+	if err != nil {
+		utils.WriteError(w, 500, err)
+		return
+	}
+
+	jwt, jwtErr := utils.GenerateToken(fmt.Sprint(id), userRq.Email)
+	if jwtErr != nil {
+		utils.WriteError(w, 500, err)
+		return
+	}
+
+	utils.WriteJSON(w, 200, struct {
+		Jwt string `json:"jwt"`
+	}{Jwt: jwt})
 
 }
-func protectedRoute(w http.ResponseWriter, r *http.Request) {
+func (s *Server) protectedRoute(w http.ResponseWriter, r *http.Request) {
 
 }

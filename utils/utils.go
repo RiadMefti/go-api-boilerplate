@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 	"time"
 
@@ -87,4 +89,19 @@ func ValidateToken(tokenString string) (*CustomClaims, error) {
 	}
 
 	return claims, nil
+}
+func GenerateRandomID() (int, error) {
+	// Define the maximum value for the ID as the maximum for a 32-bit signed integer
+	max := big.NewInt(2147483647) // Maximum value for PostgreSQL integer type
+	// Generate a cryptographically secure random big.Int less than max
+	id, err := rand.Int(rand.Reader, max)
+	if err != nil {
+		return 0, err
+	}
+	// Ensure the value is positive
+	if id.Sign() == -1 {
+		id = id.Neg(id)
+	}
+	// Convert the big.Int to int and return
+	return int(id.Int64()), nil
 }
