@@ -1,7 +1,9 @@
 package main
 
-import "log"
+import "github.com/RiadMefti/go-api-boilerplate/cmd/api"
 
 func main() {
-	log.Print("YESSIRIRR")
+	server := api.NewApiServer(":3000")
+
+	api.Run(server)
 }
