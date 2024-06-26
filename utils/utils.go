@@ -13,41 +13,44 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HashPassowrd(password string) (string, error) {
-
-	encpw, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+// HashPassword hashes a plain text password using bcrypt.
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
-
-	return string(encpw), nil
+	return string(hashedPassword), nil
 }
 
-func ValidatePassoword(password string, encryptedPassowrd string) bool {
-
-	return bcrypt.CompareHashAndPassword([]byte(encryptedPassowrd), []byte(password)) == nil
-
+// ValidatePassword compares a plain text password with a hashed password.
+func ValidatePassword(password string, hashedPassword string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) == nil
 }
 
+// ParseJSON decodes a JSON request body into the given struct.
 func ParseJSON(r *http.Request, v any) error {
 	if r.Body == nil {
 		return fmt.Errorf("missing request body")
 	}
-
+	defer r.Body.Close()
 	return json.NewDecoder(r.Body).Decode(v)
 }
+
+// WriteJSON encodes the given struct as JSON and writes it to the response writer.
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
 }
 
+// WriteError writes an error message as a JSON response with the given status code.
 func WriteError(w http.ResponseWriter, status int, err error) {
 	WriteJSON(w, status, map[string]string{"error": err.Error()})
 }
 
 var jwtKey = []byte(os.Getenv("JWTSECRET"))
 
+// CustomClaims defines custom JWT claims containing user ID and email.
 type CustomClaims struct {
 	UserID string `json:"id"`
 	Email  string `json:"email"`
@@ -71,7 +74,6 @@ func GenerateToken(userID, email string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	return tokenString, nil
 }
 
@@ -92,18 +94,13 @@ func ValidateToken(tokenString string) (*CustomClaims, error) {
 
 	return claims, nil
 }
+
+// GenerateRandomID generates a random integer ID suitable for use with PostgreSQL.
 func GenerateRandomID() (int, error) {
-	// Define the maximum value for the ID as the maximum for a 32-bit signed integer
 	max := big.NewInt(2147483647) // Maximum value for PostgreSQL integer type
-	// Generate a cryptographically secure random big.Int less than max
 	id, err := rand.Int(rand.Reader, max)
 	if err != nil {
 		return 0, err
 	}
-	// Ensure the value is positive
-	if id.Sign() == -1 {
-		id = id.Neg(id)
-	}
-	// Convert the big.Int to int and return
 	return int(id.Int64()), nil
 }
