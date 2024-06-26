@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: go-boilerplate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 4dvygW7hipbd6nE6KsZeE0YFGqvp0nItmOp8uhgLRv9VSkBT4GTbM9xM5vob7C23
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DbHost: db
+      DbPort: 5432
+      DbUser: postgres
+      DbPassword: 4dvygW7hipbd6nE6KsZeE0YFGqvp0nItmOp8uhgLRv9VSkBT4GTbM9xM5vob7C23
+      DbName: go-boilerplate
+      JWTSECRET: 4dvygW7hipbd6nE6KsZeE0YFGqvp0nItmOp8uhgLRv9VSkBT4GTbM9xM5vob7C23
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
