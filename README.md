@@ -1,6 +1,6 @@
 # Go API Boilerplate
 
-This is a boilerplate project for a Go REST API that  includes user authentication with JWT
+This is a boilerplate project for a Go REST API that  includes user authentication with JWT .It only uses net/http for server and routing
 
 ## Requirements
 
